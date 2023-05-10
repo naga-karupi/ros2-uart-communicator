@@ -120,6 +120,9 @@ public:
 	
 	void reopen_sub_callback(std_msgs::msg::Bool::SharedPtr msg) {
 		if(msg->data) {
+			if(fd_ >= 0) {
+				close(fd_);
+			}
 			if(!open_serial_port()) {
 				std_msgs::msg::Bool msg;
 				msg.data = true;
