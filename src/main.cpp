@@ -20,9 +20,7 @@ public:
 		this->reopen_port_sub = this->create_subscription<std_msgs::msg::Bool>("uart_reopen", 10, std::bind(&UARTNode::reopen_sub_callback, this, std::placeholders::_1));
 
 		if (!open_serial_port()) {
-			std_msgs::msg::Bool msg;
-			msg.data = true;
-			uart_fail_pub->publish(msg);
+			uart_fail_publish();
 		}
 	}
 
@@ -91,18 +89,14 @@ public:
 	void send(const std::string &data) {
 		if(write(fd_, data.c_str(), data.length()) == -1) {
 			RCLCPP_ERROR(this->get_logger(), "送信に失敗しました");
-			std_msgs::msg::Bool msg;
-			msg.data = true;
-			uart_fail_pub->publish(msg);
+			uart_fail_publish();
 		} else {}
 	}
   
 	void sub_callback(std_msgs::msg::UInt8MultiArray::SharedPtr msg) {
 		if(fd_ < 0) {
 			RCLCPP_ERROR(this->get_logger(), "シリアルポートが開いていません");
-			std_msgs::msg::Bool msg;
-			msg.data = true;
-			uart_fail_pub->publish(msg);
+			uart_fail_publish();
 			return ;
 		}
 
@@ -124,9 +118,7 @@ public:
 				close(fd_);
 			}
 			if(!open_serial_port()) {
-				std_msgs::msg::Bool msg;
-				msg.data = true;
-				uart_fail_pub->publish(msg);
+				uart_fail_publish();
 			}
 		}
 	}
@@ -134,9 +126,7 @@ public:
 	void recv_timer_callback() {
 		if(fd_ < 0) {
 			RCLCPP_ERROR(this->get_logger(), "シリアルポートが開いていません");
-			std_msgs::msg::Bool msg;
-			msg.data = true;
-			uart_fail_pub->publish(msg);
+			
 			return ;
 		}
 		
@@ -153,6 +143,12 @@ public:
 				pub_msg.data[i] = buff[i];
 			}
 		}
+	}
+	
+	void uart_fail_publish() {
+		std_msgs::msg::Bool msg;
+		msg.data = true;
+		uart_fail_pub->publish(msg);
 	}
 
 private:
