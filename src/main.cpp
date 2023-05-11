@@ -7,6 +7,10 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <chrono>
+#include <map>
+#include <array>
+
+#include "map_data.hpp"
 
 using namespace std::chrono_literals;
 
@@ -35,12 +39,29 @@ public:
 	bool open_serial_port() {
 		// シリアルポートのデバイスファイルを設定
 		auto param_serial_name = rcl_interfaces::msg::ParameterDescriptor{};
+		auto param_baudrate    = rcl_interfaces::msg::ParameterDescriptor{};
 		param_serial_name.description = "";
 		this->declare_parameter("serial_name", "", param_serial_name);
+		this->declare_parameter("baudrate", 115200, param_baudrate);
 
 		auto device = get_parameter("serial_name").as_string();
+		auto baudrate = get_parameter("baudrate").as_int();
 
-		RCLCPP_INFO(this->get_logger(), "%s", device.c_str());
+		RCLCPP_INFO(this->get_logger(), "device  : %s", device.c_str());
+		RCLCPP_INFO(this->get_logger(), "baudrate: %d", baudrate);
+
+		bool is_same_rate = false;
+		for(const auto& rate: baudrate_list) {
+			if (baudrate == rate) {
+				is_same_rate = true;
+				break;
+			}
+		}
+
+		if(!is_same_rate) {
+			RCLCPP_ERROR(this->get_logger(), "不正なbaudrateです");
+			return false;
+		}
 
 		// シリアルポートをオープン
 		fd_ = open(device.c_str(), O_RDWR | O_NOCTTY | O_SYNC);
@@ -57,8 +78,7 @@ public:
 			std::cout << "tcgetattr error!" << std::endl;
 			return false;
 		}
-		
-		constexpr auto UART_BAUDRATE = B115200;
+		int UART_BAUDRATE = baudrate_map.at(baudrate);
 		struct termios term;
 
 		if (-1 == tcgetattr(fd_, &term)) {
@@ -126,7 +146,7 @@ public:
 	void recv_timer_callback() {
 		if(fd_ < 0) {
 			RCLCPP_ERROR(this->get_logger(), "シリアルポートが開いていません");
-			
+			uart_fail_publish();
 			return ;
 		}
 		
@@ -139,7 +159,7 @@ public:
 
 			std_msgs::msg::UInt8MultiArray pub_msg;
 			pub_msg.data.resize(n);
-			for (int i = 0; i < pub_msg.data.size(); i++) {
+			for (unsigned long i = 0; i < pub_msg.data.size(); i++) {
 				pub_msg.data[i] = buff[i];
 			}
 		}
