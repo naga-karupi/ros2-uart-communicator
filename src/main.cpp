@@ -75,7 +75,7 @@ public:
 		tcgetattr(fd_, &serial);
 		if (-1 == tcgetattr(fd_, &serial)) {
 			close(fd_);
-			std::cout << "tcgetattr error!" << std::endl;
+			RCLCPP_ERROR(this->get_logger(), "tcgetattr error!" );
 			return false;
 		}
 		int UART_BAUDRATE = baudrate_map.at(baudrate);
@@ -83,7 +83,7 @@ public:
 
 		if (-1 == tcgetattr(fd_, &term)) {
 			close(fd_);
-			std::cout << "tcsetattr error!" << std::endl;
+			RCLCPP_ERROR(this->get_logger(), "tcsetattr error!" );
 			return false;
 		}
 
@@ -100,7 +100,7 @@ public:
 
 		if (-1 == tcsetattr(fd_, TCSANOW, &term)) {
 			close(fd_);
-			std::cout << "tcsetattr error!" << std::endl;
+			RCLCPP_ERROR(this->get_logger(), "tcsetattr error!" );
 			return false;
 		}
 		return true;
