@@ -18,7 +18,7 @@ class UARTNode : public rclcpp::Node {
 public:
 	UARTNode() : Node("uart_node") {
 		this->sub      = this->create_subscription<std_msgs::msg::UInt8MultiArray>("uart_msg", 10, std::bind(&UARTNode::sub_callback, this, std::placeholders::_1));
-		this->recv_tim = this->create_wall_timer(100ms, std::bind(&UARTNode::recv_timer_callback, this));
+		this->recv_tim = this->create_wall_timer(1ms, std::bind(&UARTNode::recv_timer_callback, this));
 		this->pub      = this->create_publisher<std_msgs::msg::UInt8MultiArray>("uart_rx_msg",10);
 		this->uart_fail_pub   = this->create_publisher<std_msgs::msg::Bool>("uart_fail_msg", 10);
 		this->reopen_port_sub = this->create_subscription<std_msgs::msg::Bool>("uart_reopen", 10, std::bind(&UARTNode::reopen_sub_callback, this, std::placeholders::_1));
