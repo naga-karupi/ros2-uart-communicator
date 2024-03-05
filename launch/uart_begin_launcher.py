@@ -12,7 +12,7 @@ def generate_launch_description():
                 output='screen',
                 emulate_tty=True,
                 parameters=[
-                    {"serial_name": "/dev/ttyUSB0"}
+                    {"serial_name": "/dev/ttyACM0"}
                 ]
             ),
         ])

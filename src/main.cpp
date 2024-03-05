@@ -165,6 +165,8 @@ public:
 			for (unsigned long i = 0; i < pub_msg.data.size(); i++) {
 				pub_msg.data[i] = buff[i];
 			}
+
+			pub->publish(pub_msg);
 		}
 	}
 	
