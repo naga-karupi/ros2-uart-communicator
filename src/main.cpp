@@ -110,10 +110,14 @@ public:
 	}
 
 	void send(const std::string &data) {
+		tcdrain(fd_);
+
 		if(write(fd_, data.c_str(), data.length()) == -1) {
 			RCLCPP_ERROR(this->get_logger(), "送信に失敗しました");
 			uart_fail_publish();
-		} else {}
+		} 
+		else 
+		{}
 	}
   
 	void sub_callback(std_msgs::msg::UInt8MultiArray::SharedPtr msg) {
